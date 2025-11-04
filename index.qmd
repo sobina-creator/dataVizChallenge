@@ -110,6 +110,13 @@ Our purpose is to investigate whether Coors Field in Denver, Colorado is truly t
 **Question 1: Hypothesis Formation**
 - Why might high altitude affect baseball performance?  Is Coors Field affected by high altitude?
 :::
+**Answer:**  
+High altitude can affect baseball performance in several ways:
+- Lower air density at high altitude can cause balls to travel farther, increasing the likelihood of home runs.
+- The thinner air can also make it more difficult to hit the ball hard, leading to more ground balls and fewer home runs.
+- The lower air pressure can also affect the ball's trajectory, making it more likely to stay in the air for longer periods of time.
+
+Coors Field is affected by high altitude. It is one of the highest stadiums in Major League Baseball, and it is known for being a home-run friendly stadium.
 
 ## Stage 2: Curation of Content
 
@@ -154,6 +161,10 @@ print(avgDF_2021.head())
 **Question 1: Data Aggregation Strategy**
 - How many games are in the dataset? Why do we aggregate individual games into stadium averages before we start the visualization process?
 :::
+**Answer:**  
+There are `{{ df2010.shape[0] }}` games in the 2010 dataset and `{{ df2021.shape[0] }}` games in the 2021 dataset.
+
+We aggregate individual games into stadium averages before visualizing the data because looking at each game separately would be overwhelming and would not clearly reveal patterns related to the stadiums themselves. By averaging at the stadium level, we can directly compare environments and minimize the noise from single-game anomalies, better highlighting how venue factors (like altitude) may influence the results.
 
 ## Stage 3: Structuring of Visual Mappings
 
@@ -217,6 +228,14 @@ plt.show()
 - How does position (x/y) compare to color for encoding data?
 
 :::
+**Answer:**  
+- A horizontal bar chart is better than a scatter plot for this data because it is easier to compare the runs scored by each stadium.
+- A vertical bar chart is better than a horizontal bar chart when the number of categories is large.
+
+**Answer:**  
+- The color highlighting in Approach 4 draws attention to the Colorado Rockies' stadium (COL), visually distinguishing it from other ballparks. This emphasizes its unique value—in this case, having the highest average runs—making it easy for viewers to quickly identify and interpret the most noteworthy data point.
+- Position (x/y) generally encodes quantitative and categorical differences more precisely and is the primary channel for comparing data values (e.g., bar lengths or scatterplot positions). Color, on the other hand, is less precise but serves well to group, differentiate, or highlight categories or data points, as seen in Approach 4, where it draws attention to Colorado without disrupting the overall positional encoding of the values.
+
 
 ## Stage 4: Formatting for Your Audience
 
@@ -288,7 +307,10 @@ print(f"Colorado is {((colorado_runs / avgDF_2010_sorted.totalRuns.mean()) - 1) 
 - Is the annotation on the visualization helpful?  Can you fix its placement?
 
 :::
-
+**Answer:**  
+- The visualization is suitable for a business presentation because it is professional and easy to understand.
+- The annotation on the visualization is helpful because it provides the exact value of the Colorado Rockies' stadium.
+- The annotation can be fixed by moving it to the left of the visualization.
 
 ## Advanced Object-Oriented Techniques
 
@@ -325,9 +347,163 @@ comparison_data = pd.merge(
 - Does AI come to the right conclusion?  If not, why not?
 :::
 
+```{python}
+#| label: advanced-two-facet
+#| echo: true
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Sort stadiums alphabetically for consistent ordering
+comparison_data_sorted = comparison_data.sort_values("home").reset_index(drop=True)
+
+fig, axes = plt.subplots(1, 2, figsize=(15, 6), sharey=True)  # two side-by-side plots
+
+highlight_color = 'orchid'
+default_color = 'lightgrey'
+
+# Barplot for 2010
+colors_2010 = [highlight_color if s == 'COL' else default_color for s in comparison_data_sorted['home']]
+axes[0].bar(
+    comparison_data_sorted['home'], 
+    comparison_data_sorted['runs_2010'], 
+    color=colors_2010
+)
+axes[0].set_title("Total Runs per Stadium, 2010")
+axes[0].set_ylabel("Average Runs per Game")
+axes[0].tick_params(axis='x', rotation=45)
+axes[0].set_xlabel("Stadium (Home Team)")
+# Annotate COL
+if 'COL' in comparison_data_sorted['home'].values:
+    col_idx = comparison_data_sorted[comparison_data_sorted['home']=="COL"].index[0]
+    col_val = comparison_data_sorted.loc[col_idx, 'runs_2010']
+    axes[0].annotate(
+        f"COL: {col_val:.2f}",
+        xy=(col_idx, col_val),
+        xytext=(col_idx, col_val+0.5),
+        ha='center', color=highlight_color,
+        arrowprops=dict(facecolor=highlight_color, shrink=0.05)
+    )
+
+# Barplot for 2021
+colors_2021 = [highlight_color if s == 'COL' else "#B0B0B0" for s in comparison_data_sorted['home']]
+axes[1].bar(
+    comparison_data_sorted['home'], 
+    comparison_data_sorted['runs_2021'], 
+    color=colors_2021
+)
+axes[1].set_title("Total Runs per Stadium, 2021")
+axes[1].tick_params(axis='x', rotation=45)
+axes[1].set_xlabel("Stadium (Home Team)")
+# Annotate COL
+if 'COL' in comparison_data_sorted['home'].values:
+    col_idx = comparison_data_sorted[comparison_data_sorted['home']=="COL"].index[0]
+    col_val = comparison_data_sorted.loc[col_idx, 'runs_2021']
+    axes[1].annotate(
+        f"COL: {col_val:.2f}",
+        xy=(col_idx, col_val),
+        xytext=(col_idx, col_val+0.5),
+        ha='center', color=highlight_color,
+        arrowprops=dict(facecolor=highlight_color, shrink=0.05)
+    )
+
+plt.suptitle("Comparing MLB Ballparks: Average Runs per Game (2010 vs 2021)")
+plt.tight_layout(rect=[0, 0, 1, 0.96])
+plt.show()
+```
+
 ## Student Analysis Section: Mastering Object-Oriented Matplotlib {#student-analysis-section}
 
 **Your Task:** Demonstrate your mastery of object-oriented matplotlib and the four stages of visualization through comprehensive analysis and creation of professional visualizations.
+```{python}
+# Stage 1: Declaration of Purpose
+# (No plot – just a frame for reference in code comments)
+# Our goal is to determine if Coors Field (COL) is the most run-friendly MLB park in 2010 and compare to 2021.
+
+# Stage 2: Curation of Content
+# Prepare a summary dataframe of stadium run averages for each year.
+stadium_summary = pd.merge(
+    avgDF_2010[['home', 'totalRuns']], 
+    avgDF_2021[['home', 'totalRuns']], 
+    on='home', 
+    suffixes=('_2010','_2021')
+).rename(columns={'home': 'Stadium'})
+
+# Stage 3 & 4: Structuring of Visual Mappings + Formatting for Audience
+# Object-Oriented matplotlib: Side-by-side bar charts, highlight COL
+
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(11, 7))
+
+bar_width = 0.38
+x = np.arange(len(stadium_summary))
+highlight_color = 'mediumorchid'
+default_color = 'lightgrey'
+
+colors_2010 = [highlight_color if s == 'COL' else default_color for s in stadium_summary['Stadium']]
+colors_2021 = [highlight_color if s == 'COL' else "#B0B0B0" for s in stadium_summary['Stadium']]
+
+# 2010 bars
+bars1 = ax.bar(
+    x - bar_width/2, 
+    stadium_summary['totalRuns_2010'], 
+    width=bar_width, 
+    color=colors_2010, 
+    label='2010'
+)
+
+# 2021 bars
+bars2 = ax.bar(
+    x + bar_width/2, 
+    stadium_summary['totalRuns_2021'], 
+    width=bar_width, 
+    color=colors_2021, 
+    label='2021'
+)
+
+# Formatting
+ax.set_title(
+    "Is Coors Field (COL) Still the Most Run-Friendly Ballpark?\nAverage Runs per MLB Stadium: 2010 vs 2021",
+    fontsize=16, fontweight='bold', pad=20
+)
+ax.set_ylabel("Average Total Runs per Game", fontsize=12)
+ax.set_xlabel("Stadium (Home Team)", fontsize=12)
+ax.set_xticks(x)
+ax.set_xticklabels(stadium_summary['Stadium'], rotation=90)
+
+# Legend
+from matplotlib.patches import Patch
+legend_handles = [
+    Patch(facecolor=highlight_color, label="Colorado Rockies (COL)"),
+    Patch(facecolor="lightgrey", label="Other Stadiums (2010)"),
+    Patch(facecolor="#B0B0B0", label="Other Stadiums (2021)"),
+]
+ax.legend(handles=legend_handles + [bars1, bars2], labels=["COL (2010)", "Others (2010)", "Others (2021)", "2010", "2021"], fontsize=11, loc="upper right")
+
+# Annotate COL
+col_idx = stadium_summary[stadium_summary['Stadium'] == 'COL'].index[0]
+for idx, year, val in [
+    (col_idx, 'totalRuns_2010', stadium_summary.loc[col_idx, 'totalRuns_2010']),
+    (col_idx, 'totalRuns_2021', stadium_summary.loc[col_idx, 'totalRuns_2021'])
+]:
+    ax.annotate(
+        f"{val:.2f}",
+        xy=(idx + (bar_width/2 if year.endswith("2021") else -bar_width/2), val + 0.20),
+        xytext=(0, 8),
+        textcoords="offset points",
+        ha='center',
+        fontsize=10,
+        fontweight='bold',
+        color=highlight_color if year.endswith("2010") else "#444"
+    )
+
+# Clean look
+ax.spines['right'].set_visible(False)
+ax.spines['top'].set_visible(False)
+plt.tight_layout()
+plt.show()
+```
 
 ### Core Challenge: Four Stages Analysis
 
